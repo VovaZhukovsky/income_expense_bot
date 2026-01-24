@@ -1,23 +1,23 @@
-from datetime import datetime, date, timedelta
+from datetime import datetime
 import yadisk
 import hashlib
 import base64
 from cryptography.fernet import Fernet
 import logging
 import json
-import os
 
-config_file_path = 'config.json'
+config_file_path = 'config_dev.json'
 
 with open(config_file_path, 'r') as f:
     config = json.load(f)
     BOT_TOKEN = config["bot_token"]
-    ENCRYPT_TOKEN = f"{config["encrypt_token"]}".encode()
+    ENCRYPT_TOKEN = f"{config['encrypt_token']}".encode()
     local_xlsx_path = config["local_xlsx_path"]
     log_file_path = config["log_file_path"]
     year = config["year"]
     ya_xlsx_path = config["ya_xlsx_path"]
 
+# to-do убрать id и name в конфиг файл
 DEFAULT_INCOME_INFO = {"id": 20, "name": "job","month": f"{datetime.now().strftime('%B')}"}
 DEFAULT_EXPENSE_INFO = {"id": 4, "name": "delivery cafe","month": f"{datetime.now().strftime('%B')}"}
 
@@ -39,5 +39,3 @@ formatter = logging.Formatter(
 file_handler.setFormatter(formatter)
 
 logger.addHandler(file_handler)
-
-

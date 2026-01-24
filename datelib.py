@@ -7,15 +7,12 @@ async def set_date_handler(update: Update, context: CallbackContext):
     """Обработчик установки даты"""
     query = update.callback_query
     await query.answer()
-    
     await show_date_calendar(update, context, for_hours=False)
 
 async def show_date_calendar(update: Update, context: CallbackContext, for_hours: bool = False):
     """Показывает календарь для выбора даты"""
     query = update.callback_query
-    
     today = date.today()
-
     first_day = today.replace(day=1)
 
 # Сначала получаем следующий месяц, затем отнимаем 1 день
@@ -36,6 +33,6 @@ async def show_date_calendar(update: Update, context: CallbackContext, for_hours
     context.user_data['calendar'] = calendar
     
     await query.edit_message_text(
-        f"📅 Выберите дату ({LSTEP[step]}):",
+        f"📅 Choose date ({LSTEP[step]}):",
         reply_markup=calendar_markup
     )

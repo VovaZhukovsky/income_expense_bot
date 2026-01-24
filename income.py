@@ -169,7 +169,7 @@ async def get_income_view(update: Update, context: CallbackContext):
         # Запись данных
         month = context.user_data['selected_date'].strftime("%B")
         row = matches.get_month(month)
-        col = matches.get_letter(selected_category['id'])
+        col = matches.get_day_number(selected_category['id'])
         current_value = sheet[f'{col}{row}'].value
         if current_value is None:
             current_value = 0
@@ -237,7 +237,7 @@ async def backend_add_income_to_timesheet(context: CallbackContext, income: floa
         # Запись данных
         month = context.user_data['selected_date'].strftime("%B")
         row = matches.get_month(month)
-        col = matches.get_letter(selected_category['id'])
+        col = matches.get_day_number(selected_category['id'])
         current_value = sheet[f'{col}{row}'].value
         if current_value is None:
             current_value = 0

@@ -7,6 +7,7 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
 from datetime import datetime, date, timedelta
 
+# to-do объединить с income
 async def expense(update: Update, context: CallbackContext):
     context.user_data["mode"] = "expense"
     keyboard = [
@@ -168,7 +169,7 @@ async def get_expense_view(update: Update, context: CallbackContext):
         # Запись данных
         month = context.user_data['selected_date'].strftime("%B")
         row = matches.get_month(month)
-        col = matches.get_letter(selected_category['id'])
+        col = matches.get_day_number(selected_category['id'])
         current_value = sheet[f'{col}{row}'].value
         if current_value is None:
             current_value = 0
@@ -236,7 +237,7 @@ async def backend_add_expense_to_timesheet(context: CallbackContext, expense: fl
         # Запись данных
         month = context.user_data['selected_date'].strftime("%B")
         row = matches.get_month(month)
-        col = matches.get_letter(selected_category['id'])
+        col = matches.get_day_number(selected_category['id'])
         current_value = sheet[f'{col}{row}'].value
         if current_value is None:
             current_value = 0

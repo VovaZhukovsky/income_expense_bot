@@ -1,4 +1,4 @@
-def get_letter(day_number):
+def get_day_number(day_number):
     match day_number:
         case 1:
             return "A"
@@ -52,6 +52,7 @@ def get_letter(day_number):
             return "Y"
         case 26:
             return "Z"
+    return None
 
 def get_month(month):
     match month:
@@ -79,3 +80,4 @@ def get_month(month):
             return 13
         case "December":
             return 14
+    return None
