@@ -6,7 +6,7 @@ from cryptography.fernet import Fernet
 import logging
 import json
 
-config_file_path = 'config_dev.json'
+config_file_path = 'config.json'
 
 with open(config_file_path, 'r') as f:
     config = json.load(f)

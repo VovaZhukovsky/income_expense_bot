@@ -23,20 +23,14 @@ async def process_input(update, context):
 
 async def get_logs(update: Update, context: CallbackContext):
     try:
-        """
-        with open(common.log_file_path, "r") as log_file:
-            log_file_info = log_file.read().replace("\n", "\n\n")
-            logs = re.search(datetime.date.today().isoformat(), log_file_info)
-            await update.message.reply_text(logs or "Log file is empty")
-        """
         today = datetime.date.today().isoformat()
 
         with open(common.log_file_path, "r", encoding="utf-8") as log_file:
-            logs = "".join(
+            logs = "\n".join(
                 line for line in log_file
                 if line.startswith(today)
             )
-
+            logs = logs.replace("\n", "\n\n")
             await update.message.reply_text(logs[:4000] or "Log file is empty")
     except FileNotFoundError:
         message = "Log file is not found"
