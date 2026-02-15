@@ -26,7 +26,7 @@ async def get_logs(update: Update, context: CallbackContext):
         today = datetime.date.today().isoformat()
 
         with open(common.log_file_path, "r", encoding="utf-8") as log_file:
-            logs = "\n".join(
+            logs = "".join(
                 line for line in log_file
                 if line.startswith(today)
             )
