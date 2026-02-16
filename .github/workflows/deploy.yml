@@ -3,8 +3,9 @@ name: Deploy to server
 on:
   push:
     branches: [ "main" ]
-# to-do если службы нет, создать ее
-# to-do делать scp на сервер
+# сделат универсальный pipeline:
+# 1) скопировать файлы на сервер
+# 2) создать службу если нет и запустить ее
 jobs:
   deploy:
     runs-on: ubuntu-latest
