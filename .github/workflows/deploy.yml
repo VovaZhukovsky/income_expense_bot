@@ -1,0 +1,32 @@
+name: Deploy to server
+
+on:
+  push:
+    branches: [ "main" ]
+# нужно подключиться на сервер
+# остановить службу
+# сделать pull
+# запустить службу
+# to-do если службы нет, создать ее
+# to-do делать scp на сервер
+# конфиг тоже копировать
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Deploy
+        run: |
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            cd ${{ secrets.APP_DIR }}
+            git pull origin main
+            sudo /usr/bin/systemctl restart income_expense_bot.service
+            sudo /usr/bin/systemctl status income_expense_bot.service
+          EOF
