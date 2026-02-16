@@ -3,13 +3,8 @@ name: Deploy to server
 on:
   push:
     branches: [ "main" ]
-# нужно подключиться на сервер
-# остановить службу
-# сделать pull
-# запустить службу
 # to-do если службы нет, создать ее
 # to-do делать scp на сервер
-# конфиг тоже копировать
 jobs:
   deploy:
     runs-on: ubuntu-latest
