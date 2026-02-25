@@ -1,25 +1,23 @@
 import datetime
 import common
 import datelib
-import income
-import re
-import expense
+import action
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext, CallbackQueryHandler
 
-# to-do можно сделать один метод для доходо и расходов
 async def process_input(update, context):
-    mode = context.user_data.get("mode")
 
-    match mode:
-        case "income":
-            await income.process_income_input(update,context)
-        case "expense":
-            await expense.process_expense_input(update,context)
-        case _:
-            message = "mode not defined"
-            common.logger.error(message)
-            await update.message.reply_text(message)
+    if context.user_data.get('operator') is None:
+        common.logger.error("Operator is None")
+        await update.message.reply_text("Error: Operator is None")
+        return
+
+    await action.process_input(update,context)
+
+def create_action_handler(mode : common.Mode = common.Mode.NONE):
+    async def handler(update, context):
+        await action.action(update, context, mode)
+    return handler
 
 async def get_logs(update: Update, context: CallbackContext):
     try:
@@ -43,27 +41,21 @@ async def get_logs(update: Update, context: CallbackContext):
 def main():
     application = Application.builder().token(common.BOT_TOKEN).build()
 
-    application.add_handler(CommandHandler("income", income.income))
-    application.add_handler(CommandHandler("expense", expense.expense))
+    application.add_handler(CommandHandler("income", create_action_handler(common.Mode.INCOME)))
+    application.add_handler(CommandHandler("expense", create_action_handler(common.Mode.EXPENSE)))
     application.add_handler(CommandHandler("logs", get_logs))
-    application.add_handler(CallbackQueryHandler(income.get_income_categories, pattern="get_income_categories"))
-    application.add_handler(CallbackQueryHandler(income.get_income_view, pattern="get_income_view"))
-    application.add_handler(CallbackQueryHandler(expense.get_expense_view, pattern="get_expense_view"))
-    application.add_handler(CallbackQueryHandler(expense.get_expense_categories, pattern="get_expense_categories"))
-    application.add_handler(CallbackQueryHandler(income.income, pattern="back_to_income"))
-    application.add_handler(CallbackQueryHandler(expense.expense, pattern="back_to_expense"))
-    application.add_handler(CallbackQueryHandler(income.select_income_category_handler, pattern="^select_income_category_"))
-    application.add_handler(CallbackQueryHandler(expense.select_expense_category_handler, pattern="^select_expense_category_"))
-    application.add_handler(CallbackQueryHandler(income.ask_for_income, pattern="^ask_for_income_"))
-    application.add_handler(CallbackQueryHandler(expense.ask_for_expense, pattern="^ask_for_expense_"))
+    application.add_handler(CallbackQueryHandler(action.get_categories, pattern="get_categories"))
+    application.add_handler(CallbackQueryHandler(action.get_view, pattern="get_view"))
+    application.add_handler(CallbackQueryHandler(create_action_handler(), pattern="back"))
+    application.add_handler(CallbackQueryHandler(action.select_category_handler, pattern="^select_category_"))
+    application.add_handler(CallbackQueryHandler(action.ask_for, pattern="^ask_for_"))
     application.add_handler(CallbackQueryHandler(datelib.set_date_handler, pattern="^set_date"))
-    application.add_handler(CallbackQueryHandler(income.process_calendar_callback, pattern="^cbcal_"))
-    application.add_handler(CallbackQueryHandler(expense.process_calendar_callback, pattern="^cbcal_"))
-
+    application.add_handler(CallbackQueryHandler(action.process_calendar_callback, pattern="^cbcal_"))
     application.add_handler(
         MessageHandler(filters.TEXT & ~filters.COMMAND, process_input)
     )
     common.logger.info("Bot started")
+    print("Bot started")
     application.run_polling()
 
 if __name__ == '__main__':

@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum
 import yadisk
 import hashlib
 import base64
@@ -17,9 +18,23 @@ with open(config_file_path, 'r') as f:
     year = config["year"]
     ya_xlsx_path = config["ya_xlsx_path"]
 
-# to-do убрать id и name в конфиг файл
-DEFAULT_INCOME_INFO = {"id": 20, "name": "job","month": f"{datetime.now().strftime('%B')}"}
-DEFAULT_EXPENSE_INFO = {"id": 4, "name": "delivery cafe","month": f"{datetime.now().strftime('%B')}"}
+# to-do убрать id и name в конфиг файл сделать класс
+DEFAULT_INCOME_INFO = {"id": 20, "name": "job","month": f"{datetime.now().strftime('%B')}",
+                       "min_col": 21, "min_row": 2, "max_col": 24}
+DEFAULT_EXPENSE_INFO = {"id": 4, "name": "delivery cafe","month": f"{datetime.now().strftime('%B')}",
+                        "min_col": 2, "min_row": 2, "max_col": 19}
+
+class Mode(str, Enum):
+    NONE = ""
+    INCOME = "income"
+    EXPENSE = "expense"
+
+class Backend_TimeShift_Result:
+    def __init__(self, result, old_value = None, new_value = None, diff_value = None):
+        self.result = result
+        self.old_value = old_value
+        self.new_value = new_value
+        self.diff_value = diff_value
 
 def get_ya_client(user_id):
     key_bytes = hashlib.sha256(f"{user_id}".encode()).digest() 
