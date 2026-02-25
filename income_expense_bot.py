@@ -55,7 +55,6 @@ def main():
         MessageHandler(filters.TEXT & ~filters.COMMAND, process_input)
     )
     common.logger.info("Bot started")
-    print("Bot started")
     application.run_polling()
 
 if __name__ == '__main__':
