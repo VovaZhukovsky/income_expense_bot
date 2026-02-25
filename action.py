@@ -10,9 +10,9 @@ from datetime import date
 async def action(update: Update, context: CallbackContext, mode: common.Mode = common.Mode.NONE):
 
     if update.callback_query:
-        mode = context.user_data["mode"]
+        mode = context.user_data['mode']
     else:
-        context.user_data["mode"] = mode
+        context.user_data['mode'] = mode
 
     match mode.value:
         case "income":
@@ -114,7 +114,7 @@ async def select_category_handler(update: Update, context: CallbackContext):
 
     # Сохраняем выбранную категорию в контексте
     context.user_data['selected_category'] = selected_category
-    await action(update, context,context.user_data["mode"])
+    await action(update, context,context.user_data['mode'])
 
 
 async def process_calendar_callback(update: Update, context: CallbackContext):
@@ -141,7 +141,7 @@ async def process_calendar_callback(update: Update, context: CallbackContext):
         selected_date = result
         context.user_data['selected_date'] = selected_date
 
-        await action(update, context,context.user_data["mode"])
+        await action(update, context,context.user_data['mode'])
 
 
 async def ask_for(update: Update, context: CallbackContext):
@@ -161,7 +161,7 @@ async def ask_for(update: Update, context: CallbackContext):
     await query.edit_message_text(
         f"Category: {context.user_data['selected_category']['name']}\n"
         f"Datetime: {context.user_data['selected_date']}\n\n"
-        f"Enter sum {context.user_data["mode"].value}:",
+        f"Enter sum {context.user_data['mode'].value}:",
         reply_markup=reply_markup)
 
 
@@ -191,7 +191,7 @@ async def get_view(update: Update, context: CallbackContext):
             f"✅ Success!\n\n"
             f"Category: {context.user_data['selected_category']['name']}\n"
             f"📅 Datetime: {context.user_data['selected_date']}\n"
-            f"💰 Current {context.user_data["mode"].value}: {current_value}\n\n"
+            f"💰 Current {context.user_data['mode'].value}: {current_value}\n\n"
             "What is next?",
             reply_markup=reply_markup
         )
@@ -206,7 +206,7 @@ async def process_input(update: Update, context: CallbackContext):
     try:
         # Парсим введенное значение
         value = float(update.message.text.strip().replace(',', '.'))
-        mode = context.user_data["mode"]
+        mode = context.user_data['mode']
         # Проверяем валидность
         if value <= 0:
             await update.message.reply_text("Please, enter positive number:")
@@ -249,7 +249,7 @@ async def backend_timesheet(context: CallbackContext, value: float) -> common.Ba
 
     try:
         log_action = ""
-        mode = context.user_data["mode"]
+        mode = context.user_data['mode']
         sheet = context.user_data.get('sheet')
         selected_category = context.user_data.get('selected_category')
         # Запись данных
@@ -271,5 +271,5 @@ async def backend_timesheet(context: CallbackContext, value: float) -> common.Ba
         context.user_data['operator'] = None
         return common.Backend_TimeShift_Result(True, current_value, sheet[f'{col}{row}'].value, value)
     except Exception as e:
-        common.logger.error(f"An error occurred while interacting with {context.user_data["mode"]}: {e}")
+        common.logger.error(f"An error occurred while interacting with {context.user_data['mode']}: {e}")
         return common.Backend_TimeShift_Result(False)
