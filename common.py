@@ -23,7 +23,7 @@ with open(config_file_path, 'r') as f:
     DEFAULT_INCOME_INFO = config["default_income"]
     DEFAULT_EXPENSE_INFO = config["default_expense"]
 
-ya_token = Fernet(os.environ["KEY"]).decrypt(os.environ["YA_TOKEN_ENCRYPTED"]).decode()
+ya_token = Fernet(os.environ["KEY"].encode()).decrypt(os.environ["YA_TOKEN_ENCRYPTED"].encode()).decode()
 
 class Mode(str, Enum):
     NONE = ""
