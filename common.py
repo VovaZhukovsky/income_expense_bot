@@ -1,29 +1,29 @@
+import os
 import sys
-from datetime import datetime
+import getpass
 from enum import Enum
+from functools import wraps
 import yadisk
-import hashlib
-import base64
 from cryptography.fernet import Fernet
 import logging
 import json
+from telegram import Update
+from telegram.ext import CallbackContext
 
-config_file_path = 'config.json'
+config_file_path = os.getenv("CONFIG_PATH", "config.json")
 
 with open(config_file_path, 'r') as f:
     config = json.load(f)
-    BOT_TOKEN = config["bot_token"]
-    ENCRYPT_TOKEN = f"{config['encrypt_token']}".encode()
+    BOT_TOKEN = os.environ["INCOME_EXPENSE_BOT_TOKEN"]
     local_xlsx_path = config["local_xlsx_path"]
     log_file_path = config["log_file_path"]
     year = config["year"]
     ya_xlsx_path = config["ya_xlsx_path"]
+    ALLOWED_USER_IDS = set(config.get("allowed_user_ids", []))
+    DEFAULT_INCOME_INFO = config["default_income"]
+    DEFAULT_EXPENSE_INFO = config["default_expense"]
 
-# to-do убрать id и name в конфиг файл сделать класс
-DEFAULT_INCOME_INFO = {"id": 20, "name": "job","month": f"{datetime.now().strftime('%B')}",
-                       "min_col": 21, "min_row": 2, "max_col": 24}
-DEFAULT_EXPENSE_INFO = {"id": 4, "name": "delivery cafe","month": f"{datetime.now().strftime('%B')}",
-                        "min_col": 2, "min_row": 2, "max_col": 19}
+ya_token = Fernet(os.environ["KEY"]).decrypt(os.environ["YA_TOKEN_ENCRYPTED"]).decode()
 
 class Mode(str, Enum):
     NONE = ""
@@ -37,11 +37,8 @@ class Backend_TimeShift_Result:
         self.new_value = new_value
         self.diff_value = diff_value
 
-def get_ya_client(user_id):
-    key_bytes = hashlib.sha256(f"{user_id}".encode()).digest() 
-    key = base64.urlsafe_b64encode(key_bytes)
-    cipher = Fernet(key)
-    return yadisk.Client(token=cipher.decrypt(ENCRYPT_TOKEN).decode())
+def get_ya_client():
+    return yadisk.Client(token=ya_token)
 
 logger = logging.getLogger("income_expense_bot")
 logger.setLevel(logging.INFO)
@@ -60,3 +57,17 @@ console_handler.setFormatter(formatter)
 
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
+
+def authorized(handler):
+    @wraps(handler)
+    async def wrapper(update: Update, context: CallbackContext):
+        user_id = update.effective_user.id
+        if ALLOWED_USER_IDS and user_id not in ALLOWED_USER_IDS:
+            logger.warning(f"Unauthorized access attempt by user_id={user_id}")
+            if update.callback_query:
+                await update.callback_query.answer("Access denied.", show_alert=True)
+            elif update.message:
+                await update.message.reply_text("Access denied.")
+            return
+        return await handler(update, context)
+    return wrapper

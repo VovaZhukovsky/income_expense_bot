@@ -36,23 +36,24 @@ async def get_logs(update: Update, context: CallbackContext):
         await update.message.reply_text(message)
     except Exception as e:
         common.logger.error(e)
-        await update.message.reply_text(f"Error: {e}")
+        await update.message.reply_text("Error occurred while trying to get logs")
 
 def main():
     application = Application.builder().token(common.BOT_TOKEN).build()
 
-    application.add_handler(CommandHandler("income", create_action_handler(common.Mode.INCOME)))
-    application.add_handler(CommandHandler("expense", create_action_handler(common.Mode.EXPENSE)))
-    application.add_handler(CommandHandler("logs", get_logs))
-    application.add_handler(CallbackQueryHandler(action.get_categories, pattern="get_categories"))
-    application.add_handler(CallbackQueryHandler(action.get_view, pattern="get_view"))
-    application.add_handler(CallbackQueryHandler(create_action_handler(), pattern="back"))
-    application.add_handler(CallbackQueryHandler(action.select_category_handler, pattern="^select_category_"))
-    application.add_handler(CallbackQueryHandler(action.ask_for, pattern="^ask_for_"))
-    application.add_handler(CallbackQueryHandler(datelib.set_date_handler, pattern="^set_date"))
-    application.add_handler(CallbackQueryHandler(action.process_calendar_callback, pattern="^cbcal_"))
+    auth = common.authorized
+    application.add_handler(CommandHandler("income", auth(create_action_handler(common.Mode.INCOME))))
+    application.add_handler(CommandHandler("expense", auth(create_action_handler(common.Mode.EXPENSE))))
+    application.add_handler(CommandHandler("logs", auth(get_logs)))
+    application.add_handler(CallbackQueryHandler(auth(action.get_categories), pattern="get_categories"))
+    application.add_handler(CallbackQueryHandler(auth(action.get_view), pattern="get_view"))
+    application.add_handler(CallbackQueryHandler(auth(create_action_handler()), pattern="back"))
+    application.add_handler(CallbackQueryHandler(auth(action.select_category_handler), pattern="^select_category_"))
+    application.add_handler(CallbackQueryHandler(auth(action.ask_for), pattern="^ask_for_"))
+    application.add_handler(CallbackQueryHandler(auth(datelib.set_date_handler), pattern="^set_date"))
+    application.add_handler(CallbackQueryHandler(auth(action.process_calendar_callback), pattern="^cbcal_"))
     application.add_handler(
-        MessageHandler(filters.TEXT & ~filters.COMMAND, process_input)
+        MessageHandler(filters.TEXT & ~filters.COMMAND, auth(process_input))
     )
     common.logger.info("Bot started")
     application.run_polling()

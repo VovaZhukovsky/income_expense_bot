@@ -1,10 +1,51 @@
 # income_expense_bot
 
+## Config
+
+Путь к файлу задаётся через `CONFIG_PATH` (по умолчанию `config.json`).
+
+```json
 {
-  "bot_token": "string",
-  "encrypt_token": "string",
   "local_xlsx_path": "./test.xlsx",
   "log_file_path": "/var/log/test.log",
   "year": "2026",
-  "ya_xlsx_path":"/test.xlsx"
+  "ya_xlsx_path": "/test.xlsx",
+  "allowed_user_ids": [123456789],
+  "default_income": {"id": 20, "name": "job", "min_col": 21, "min_row": 2, "max_col": 24},
+  "default_expense": {"id": 4, "name": "delivery cafe", "min_col": 2, "min_row": 2, "max_col": 19}
 }
+```
+
+`allowed_user_ids` — опционально; если не указано, доступ открыт для всех.
+
+## Переменные окружения
+
+| Переменная | Описание |
+|---|---|
+| `INCOME_EXPENSE_BOT_TOKEN` | Токен Telegram-бота |
+| `KEY` | Fernet-ключ для расшифровки токена Яндекс.Диска |
+| `YA_TOKEN_ENCRYPTED` | Зашифрованный OAuth-токен Яндекс.Диска |
+| `CONFIG_PATH` | Путь к конфигу (опционально) |
+
+## Подготовка токена Яндекс.Диска (один раз, локально)
+
+```python
+from cryptography.fernet import Fernet
+
+key = Fernet.generate_key()
+print("Key:", key.decode())  # → KEY
+
+cipher = Fernet(key)
+encrypted = cipher.encrypt(b"твой_токен_яндекс_диска")
+print("Encrypted:", encrypted.decode())  # → YA_TOKEN_ENCRYPTED
+```
+
+## Запуск
+
+```bash
+export INCOME_EXPENSE_BOT_TOKEN="токен_бота"
+export KEY="fernet_ключ"
+export YA_TOKEN_ENCRYPTED="зашифрованная_строка"
+source .venv/bin/activate
+python income_expense_bot.py
+```

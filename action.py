@@ -28,7 +28,7 @@ async def action(update: Update, context: CallbackContext, mode: common.Mode = c
         [InlineKeyboardButton(f"🔍 Show {mode.value}", callback_data="get_view")]
     ]
     if not os.path.isfile(common.local_xlsx_path):
-        client = common.get_ya_client(context._user_id)
+        client = common.get_ya_client()
         with client:
             client.download(common.ya_xlsx_path, common.local_xlsx_path)
     workbook = load_workbook(common.local_xlsx_path)
@@ -71,7 +71,7 @@ async def get_categories(update: Update, context: CallbackContext):
     action_info = context.user_data['action_info']
     index = action_info["min_col"]
     for col in sheet.iter_cols(min_col=action_info["min_col"], min_row=action_info["min_row"], max_col=action_info["max_col"], values_only=True):
-        category_list.append({"id": index, "name": col[0], "month": matches.get_month(index)})
+        category_list.append({"id": index, "name": col[0]})
         index += 1
 
     context.user_data['category_list'] = category_list
@@ -196,8 +196,9 @@ async def get_view(update: Update, context: CallbackContext):
             reply_markup=reply_markup
         )
 
-    except ValueError:
-        await update.message.reply_text("An error occurred while getting information.")
+    except Exception as e:
+        common.logger.error(f"An error occurred while getting view: {e}")
+        await query.edit_message_text("An error occurred while getting information.")
 
 
 async def process_input(update: Update, context: CallbackContext):
@@ -233,11 +234,14 @@ async def process_input(update: Update, context: CallbackContext):
                 "What is next?",
                 reply_markup=reply_markup
             )
-            client = common.get_ya_client(context._user_id)
-            with client:
-                client.upload(common.local_xlsx_path, common.ya_xlsx_path, overwrite=True)
-            os.remove(common.local_xlsx_path)
-
+            try:
+                client = common.get_ya_client()
+                with client:
+                    client.upload(common.local_xlsx_path, common.ya_xlsx_path, overwrite=True)
+                os.remove(common.local_xlsx_path)
+            except Exception as e:
+                common.logger.error(f"Failed to upload to Yandex Disk: {e}")
+                await update.message.reply_text("⚠️ Data saved locally but failed to upload to Yandex Disk.")
         else:
             await update.message.reply_text(f"❌ An error occurred while interacting with {mode.value}. Try again.")
 
