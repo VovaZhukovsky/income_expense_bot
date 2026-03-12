@@ -3,7 +3,7 @@ name: Deploy to server
 on:
   push:
     branches: [ "main" ]
-# сделат универсальный pipeline:
+# to-do сделат универсальный pipeline:
 # 1) скопировать файлы на сервер
 # 2) создать службу если нет и запустить ее
 jobs:
