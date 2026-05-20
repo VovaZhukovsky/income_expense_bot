@@ -19,9 +19,9 @@ fi
 # Create env.env if missing
 if [ ! -f "$ENV_FILE" ]; then
   echo "env.env not found at $ENV_FILE"
-  echo "Create"
   exit 1
 fi
+sudo chown "$USER:$USER" "$ENV_FILE"
 chmod 600 "$ENV_FILE"
 
 # Create systemd service if missing
