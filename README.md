@@ -104,3 +104,18 @@ CONFIG_PATH=/opt/income_expense_bot/config.json
 | `SSH_USER` | `github_actions_user` |
 
 После этого любой пуш в `main` автоматически деплоит бота на сервер.
+
+### Прокси (если Telegram заблокирован)
+
+Если сервер находится в регионе с блокировкой Telegram, добавь в секцию `[Service]` файла `/etc/systemd/system/income_expense_bot.service`:
+
+```ini
+Environment=HTTPS_PROXY=http://127.0.0.1:7896
+Environment=ALL_PROXY=http://127.0.0.1:7896
+```
+
+После изменения службы:
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart income_expense_bot.service
+```
