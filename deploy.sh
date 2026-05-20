@@ -16,6 +16,9 @@ else
   git -C "$APP_DIR" pull origin main
 fi
 
+# Install dependencies
+sudo pip3 install python-telegram-bot cryptography yadisk openpyxl python-telegram-bot-calendar --quiet
+
 # Create env.env if missing
 if [ ! -f "$ENV_FILE" ]; then
   echo "env.env not found at $ENV_FILE"
