@@ -16,9 +16,12 @@ else
   git -C "$APP_DIR" pull origin main
 fi
 
-# Install dependencies
-sudo apt-get install -y python3-pip --quiet
-sudo pip3 install python-telegram-bot cryptography yadisk openpyxl python-telegram-bot-calendar --quiet
+# Setup venv and install dependencies
+sudo apt-get install -y python3-venv --quiet
+if [ ! -d "$APP_DIR/.venv" ]; then
+  python3 -m venv "$APP_DIR/.venv"
+fi
+"$APP_DIR/.venv/bin/pip" install python-telegram-bot cryptography yadisk openpyxl python-telegram-bot-calendar --quiet
 
 # Create env.env if missing
 if [ ! -f "$ENV_FILE" ]; then
@@ -40,7 +43,7 @@ Type=simple
 User=$USER
 WorkingDirectory=$APP_DIR
 EnvironmentFile=$ENV_FILE
-ExecStart=/usr/bin/python3 $APP_DIR/income_expense_bot.py
+ExecStart=$APP_DIR/.venv/bin/python3 $APP_DIR/income_expense_bot.py
 Restart=on-failure
 RestartSec=5
 
