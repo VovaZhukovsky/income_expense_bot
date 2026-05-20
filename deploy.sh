@@ -17,6 +17,7 @@ else
 fi
 
 # Install dependencies
+sudo apt-get install -y python3-pip --quiet
 sudo pip3 install python-telegram-bot cryptography yadisk openpyxl python-telegram-bot-calendar --quiet
 
 # Create env.env if missing
