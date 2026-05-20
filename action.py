@@ -206,7 +206,8 @@ async def process_input(update: Update, context: CallbackContext):
 
     try:
         # Парсим введенное значение
-        value = float(update.message.text.strip().replace(',', '.'))
+        parts = update.message.text.strip().split()
+        value = sum(float(p.replace(',', '.')) for p in parts)
         mode = context.user_data['mode']
         # Проверяем валидность
         if value <= 0:
