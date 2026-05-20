@@ -5,11 +5,13 @@ APP_DIR="/opt/income_expense_bot"
 SERVICE_NAME="income_expense_bot"
 SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
 ENV_FILE="${APP_DIR}/env.env"
-REPO_URL="https://github.com/zhuvla/income_expense_bot.git"
+REPO_URL="https://github.com/VovaZhukovsky/income_expense_bot.git"
 
 # Clone or pull
 if [ ! -d "$APP_DIR/.git" ]; then
-  git clone "$REPO_URL" "$APP_DIR"
+  git -C "$APP_DIR" init
+  git -C "$APP_DIR" remote add origin "$REPO_URL"
+  git -C "$APP_DIR" pull origin main
 else
   git -C "$APP_DIR" pull origin main
 fi
