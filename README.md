@@ -28,6 +28,7 @@ excel таблицы, находящаяся на яндекс диске.
 | `INCOME_EXPENSE_BOT_TOKEN` | Токен Telegram-бота |
 | `KEY` | Fernet-ключ для расшифровки токена Яндекс.Диска |
 | `YA_TOKEN_ENCRYPTED` | Зашифрованный OAuth-токен Яндекс.Диска |
+| `ALLOWED_USER_IDS` | Telegram user ID через запятую (опционально, если пусто — доступ для всех) |
 | `CONFIG_PATH` | Путь к конфигу (опционально) |
 
 ## Подготовка токена Яндекс.Диска (один раз, локально)
@@ -52,3 +53,54 @@ export YA_TOKEN_ENCRYPTED="зашифрованная_строка"
 source .venv/bin/activate
 python income_expense_bot.py
 ```
+
+## Деплой на сервер
+
+Деплой происходит автоматически при пуше в `main` через GitHub Actions.
+
+### Первоначальная настройка сервера (один раз)
+
+**1. Создать пользователя `github_actions_user` на сервере**
+
+Используй скрипт из [vps_customization](https://github.com/zhuvla/vps_customization).
+Сгенерируй SSH-ключ локально:
+
+```bash
+ssh-keygen -t ed25519 -C "github-actions" -f ~/.ssh/github_actions_key
+```
+
+На сервере:
+```bash
+sudo bash scripts/setup_user.sh github_actions_user "$(cat ~/.ssh/github_actions_key.pub)"
+```
+
+**2. Создать директорию приложения**
+
+```bash
+sudo mkdir -p /opt/income_expense_bot
+sudo chown github_actions_user:github_actions_user /opt/income_expense_bot
+```
+
+**3. Создать `env.env` с секретами**
+
+```bash
+nano /opt/income_expense_bot/env.env
+```
+
+```
+INCOME_EXPENSE_BOT_TOKEN=...
+KEY=...
+YA_TOKEN_ENCRYPTED=...
+CONFIG_PATH=/opt/income_expense_bot/config.json
+```
+
+**4. Добавить secrets в GitHub репозиторий**
+
+| Secret | Значение |
+|--------|---------|
+| `SSH_KEY` | содержимое `~/.ssh/github_actions_key` |
+| `SSH_HOST` | IP сервера |
+| `SSH_PORT` | SSH порт |
+| `SSH_USER` | `github_actions_user` |
+
+После этого любой пуш в `main` автоматически деплоит бота на сервер.

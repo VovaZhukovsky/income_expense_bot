@@ -3,9 +3,7 @@ name: Deploy to server
 on:
   push:
     branches: [ "main" ]
-# to-do сделат универсальный pipeline:
-# 1) скопировать файлы на сервер
-# 2) создать службу если нет и запустить ее
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -23,11 +21,12 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy
+      - name: Copy deploy script
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            cd ${{ secrets.APP_DIR }}
-            git pull origin main
-            sudo /usr/bin/systemctl restart income_expense_bot.service
-            sudo /usr/bin/systemctl status income_expense_bot.service
-          EOF
+          scp -P ${{ secrets.SSH_PORT }} deploy.sh \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/deploy.sh
+
+      - name: Run deploy script
+        run: |
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            "chmod +x /tmp/deploy.sh && /tmp/deploy.sh"

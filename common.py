@@ -20,7 +20,8 @@ with open(config_file_path, 'r') as f:
     log_file_path = config["log_file_path"]
     year = config["year"]
     ya_xlsx_path = config["ya_xlsx_path"]
-    ALLOWED_USER_IDS = set(config.get("allowed_user_ids", []))
+    _allowed = os.getenv("ALLOWED_USER_IDS", "")
+    ALLOWED_USER_IDS = set(int(x) for x in _allowed.split(",") if x.strip())
     DEFAULT_INCOME_INFO = config["default_income"]
     DEFAULT_EXPENSE_INFO = config["default_expense"]
 
