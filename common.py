@@ -6,6 +6,7 @@ from functools import wraps
 import yadisk
 from cryptography.fernet import Fernet
 import logging
+from logging.handlers import WatchedFileHandler
 import json
 from telegram import Update
 from telegram.ext import CallbackContext
@@ -43,7 +44,7 @@ def get_ya_client():
 logger = logging.getLogger("income_expense_bot")
 logger.setLevel(logging.INFO)
 
-file_handler = logging.FileHandler(log_file_path, encoding="utf-8")
+file_handler = WatchedFileHandler(log_file_path, encoding="utf-8")
 file_handler.setLevel(logging.INFO)
 
 console_handler = logging.StreamHandler(sys.stdout)

@@ -23,6 +23,7 @@ async def get_logs(update: Update, context: CallbackContext):
     try:
         today = datetime.date.today().isoformat()
 
+        open(common.log_file_path, "a").close()
         with open(common.log_file_path, "r", encoding="utf-8") as log_file:
             logs = "".join(
                 line for line in log_file
@@ -30,10 +31,6 @@ async def get_logs(update: Update, context: CallbackContext):
             )
             logs = logs.replace("\n", "\n\n")
             await update.message.reply_text(logs[:4000] or "Log file is empty")
-    except FileNotFoundError:
-        message = "Log file is not found"
-        common.logger.error(message)
-        await update.message.reply_text(message)
     except Exception as e:
         common.logger.error(e)
         await update.message.reply_text("Error occurred while trying to get logs")
