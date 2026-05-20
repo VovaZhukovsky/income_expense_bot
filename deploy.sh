@@ -21,7 +21,7 @@ sudo apt-get install -y python3-venv --quiet
 if [ ! -d "$APP_DIR/.venv" ]; then
   python3 -m venv "$APP_DIR/.venv"
 fi
-"$APP_DIR/.venv/bin/pip" install python-telegram-bot cryptography yadisk openpyxl python-telegram-bot-calendar --quiet
+"$APP_DIR/.venv/bin/pip" install -r "$APP_DIR/requirements.txt" --quiet
 
 # Create env.env if missing
 if [ ! -f "$ENV_FILE" ]; then

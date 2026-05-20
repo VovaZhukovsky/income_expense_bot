@@ -1,0 +1,6 @@
+python-telegram-bot
+cryptography
+yadisk
+openpyxl
+python-telegram-bot-calendar
+requests
