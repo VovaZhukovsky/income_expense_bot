@@ -6,6 +6,7 @@ SERVICE_NAME="income_expense_bot"
 SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
 ENV_FILE="${APP_DIR}/env.env"
 REPO_URL="https://github.com/VovaZhukovsky/income_expense_bot.git"
+PROXY="${HTTPS_PROXY:-}"
 
 # Clone or pull
 if [ ! -d "$APP_DIR/.git" ]; then
@@ -32,8 +33,7 @@ sudo chown "$USER:$USER" "$ENV_FILE"
 chmod 600 "$ENV_FILE"
 
 # Create systemd service if missing
-if [ ! -f "$SERVICE_FILE" ]; then
-  sudo tee "$SERVICE_FILE" > /dev/null << SVCEOF
+sudo tee "$SERVICE_FILE" > /dev/null << SVCEOF
 [Unit]
 Description=Income Expense Telegram Bot
 After=network.target
@@ -44,16 +44,17 @@ User=$USER
 WorkingDirectory=$APP_DIR
 EnvironmentFile=$ENV_FILE
 ExecStart=$APP_DIR/.venv/bin/python3 $APP_DIR/income_expense_bot.py
-Restart=on-failure
-RestartSec=5
+Restart=always
+RestartSec=10
+StartLimitIntervalSec=0
+$([ -n "$PROXY" ] && echo "Environment=HTTPS_PROXY=$PROXY
+Environment=ALL_PROXY=$PROXY")
 
 [Install]
 WantedBy=multi-user.target
 SVCEOF
-  sudo systemctl daemon-reload
-  sudo systemctl enable "${SERVICE_NAME}.service"
-  echo "Service created and enabled"
-fi
+sudo systemctl daemon-reload
+sudo systemctl enable "${SERVICE_NAME}.service"
 
 # Create logrotate config if missing
 LOGROTATE_FILE="/etc/logrotate.d/${SERVICE_NAME}"

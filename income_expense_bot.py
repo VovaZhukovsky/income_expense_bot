@@ -53,7 +53,12 @@ def main():
         MessageHandler(filters.TEXT & ~filters.COMMAND, auth(process_input))
     )
     common.logger.info("Bot started")
-    application.run_polling()
+    application.run_polling(
+        read_timeout=30,
+        write_timeout=30,
+        connect_timeout=15,
+        pool_timeout=30,
+    )
 
 if __name__ == '__main__':
     main()

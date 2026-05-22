@@ -107,15 +107,11 @@ CONFIG_PATH=/opt/income_expense_bot/config.json
 
 ### Прокси (если Telegram заблокирован)
 
-Если сервер находится в регионе с блокировкой Telegram, добавь в секцию `[Service]` файла `/etc/systemd/system/income_expense_bot.service`:
+Если сервер находится в регионе с блокировкой Telegram, добавь в `env.env`:
 
-```ini
-Environment=HTTPS_PROXY=http://127.0.0.1:7896
-Environment=ALL_PROXY=http://127.0.0.1:7896
+```
+HTTPS_PROXY=http://127.0.0.1:7896
+ALL_PROXY=http://127.0.0.1:7896
 ```
 
-После изменения службы:
-```bash
-sudo systemctl daemon-reload
-sudo systemctl restart income_expense_bot.service
-```
+`deploy.sh` автоматически подхватит эти переменные и пропишет их в systemd-юнит.
