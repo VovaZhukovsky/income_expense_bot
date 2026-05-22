@@ -36,7 +36,9 @@ async def get_logs(update: Update, context: CallbackContext):
         await update.message.reply_text("Error occurred while trying to get logs")
 
 def main():
-    application = Application.builder().token(common.BOT_TOKEN).build()
+    from telegram.request import HTTPXRequest
+    request = HTTPXRequest(read_timeout=30, write_timeout=30, connect_timeout=15, pool_timeout=30)
+    application = Application.builder().token(common.BOT_TOKEN).request(request).build()
 
     auth = common.authorized
     application.add_handler(CommandHandler("income", auth(create_action_handler(common.Mode.INCOME))))
@@ -53,12 +55,7 @@ def main():
         MessageHandler(filters.TEXT & ~filters.COMMAND, auth(process_input))
     )
     common.logger.info("Bot started")
-    application.run_polling(
-        read_timeout=30,
-        write_timeout=30,
-        connect_timeout=15,
-        pool_timeout=30,
-    )
+    application.run_polling()
 
 if __name__ == '__main__':
     main()
