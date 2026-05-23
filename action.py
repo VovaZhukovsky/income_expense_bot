@@ -2,6 +2,7 @@ import common
 import matches
 import os
 from openpyxl import load_workbook
+from openpyxl.comments import Comment
 from telegram import Update,InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CallbackContext
 from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
@@ -161,7 +162,7 @@ async def ask_for(update: Update, context: CallbackContext):
     await query.edit_message_text(
         f"Category: {context.user_data['selected_category']['name']}\n"
         f"Datetime: {context.user_data['selected_date']}\n\n"
-        f"Enter sum {context.user_data['mode'].value}:",
+        f"Enter sum {context.user_data['mode'].value} (optional comment after #, e.g. `100 50 #bonus`):",
         reply_markup=reply_markup)
 
 
@@ -205,16 +206,17 @@ async def process_input(update: Update, context: CallbackContext):
     """Обрабатывает введенное количество часов"""
 
     try:
-        # Парсим введенное значение
-        parts = update.message.text.strip().split()
+        raw = update.message.text.strip()
+        number_part, _, comment_part = raw.partition('#')
+        comment = comment_part.strip() or None
+        parts = number_part.strip().split()
         value = sum(float(p.replace(',', '.')) for p in parts)
         mode = context.user_data['mode']
-        # Проверяем валидность
         if value <= 0:
             await update.message.reply_text("Please, enter positive number:")
             return
 
-        backend_result = await backend_timesheet(context=context, value=value)
+        backend_result = await backend_timesheet(context=context, value=value, comment=comment)
 
         if backend_result.result:
             keyboard = [
@@ -224,6 +226,7 @@ async def process_input(update: Update, context: CallbackContext):
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
 
+            comment_line = f"💬 Comment: {comment}\n" if comment else ""
             await update.message.reply_text(
                 f"✅ Success!\n\n"
                 f"Category: {context.user_data['selected_category']['name']}\n"
@@ -231,7 +234,8 @@ async def process_input(update: Update, context: CallbackContext):
                 f"💰 Mode {mode.value}:\n"
                 f" Old value: {backend_result.old_value}\n"
                 f" New value: {backend_result.new_value}\n"
-                f" Diff: {backend_result.diff_value}\n\n"
+                f" Diff: {backend_result.diff_value}\n"
+                f"{comment_line}\n"
                 "What is next?",
                 reply_markup=reply_markup
             )
@@ -249,7 +253,7 @@ async def process_input(update: Update, context: CallbackContext):
     except ValueError:
         await update.message.reply_text("Please, enter positive number!")
 
-async def backend_timesheet(context: CallbackContext, value: float) -> common.Backend_TimeShift_Result:
+async def backend_timesheet(context: CallbackContext, value: float, comment: str | None = None) -> common.Backend_TimeShift_Result:
     """Ваша бэкенд логика для добавления дохода в табель"""
 
     try:
@@ -270,6 +274,12 @@ async def backend_timesheet(context: CallbackContext, value: float) -> common.Ba
         elif context.user_data['operator'] == "decrement":
             sheet[f'{col}{row}'].value = float(current_value) - value
             log_action = "decreased"
+        if comment:
+            cell = sheet[f'{col}{row}']
+            entry = f"{value:g} - {comment}"
+            existing = cell.comment.text if cell.comment else None
+            new_text = f"{existing}\n{entry}" if existing else entry
+            cell.comment = Comment(new_text, "bot")
         context.user_data.get('workbook').save(common.local_xlsx_path)
         common.logger.info(f"{mode.value} changed: category {context.user_data['selected_category']['name']}, "
             f"datetime: {context.user_data['selected_date']}: {current_value} {log_action} {value}. result: {sheet[f'{col}{row}'].value}")
