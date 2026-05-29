@@ -36,9 +36,7 @@ async def get_logs(update: Update, context: CallbackContext):
         await update.message.reply_text("Error occurred while trying to get logs")
 
 def main():
-    from telegram.request import HTTPXRequest
-    request = HTTPXRequest(read_timeout=30, write_timeout=30, connect_timeout=15, pool_timeout=30)
-    application = Application.builder().token(common.BOT_TOKEN).request(request).build()
+    application = Application.builder().token(common.BOT_TOKEN).build()
 
     auth = common.authorized
     application.add_handler(CommandHandler("income", auth(create_action_handler(common.Mode.INCOME))))
